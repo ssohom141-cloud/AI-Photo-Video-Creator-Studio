@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>AI Photo & Video Creator Studio</title>
+<style>
+:root{
+  --bg:#050914;--panel:#0b1224;--panel2:#10182d;--line:#29365c;
+  --text:#f7f8ff;--muted:#9ca8c5;--purple:#7c3cff;--blue:#168cff;
+  --cyan:#20c7ff;--pink:#d946ef;--danger:#ff5d73;
+}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at 20% 0%,#18204a 0,#070b19 38%,#040711 100%);color:var(--text);font-family:Inter,system-ui,Segoe UI,Arial,sans-serif;min-height:100vh}
+button,input,select{font:inherit}
+button{cursor:pointer}
+.app{max-width:1450px;margin:auto;padding:18px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:14px 18px;border:1px solid #202c4d;background:rgba(8,13,28,.88);backdrop-filter:blur(14px);border-radius:20px;position:sticky;top:12px;z-index:20;box-shadow:0 15px 50px #0008}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+.logo{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,#7c3cff,#168cff);box-shadow:0 0 25px #6d3cff77}
+.brand b{color:#9b6cff}.brand span{color:#fff}
+.nav{display:flex;gap:8px}
+.nav button,.ghost,.primary,.danger{border:1px solid var(--line);background:#0e162c;color:#eaf0ff;padding:10px 14px;border-radius:11px}
+.nav button.active,.primary{background:linear-gradient(135deg,#7b39ff,#326dff);border-color:#8d62ff;box-shadow:0 8px 25px #653cff44}
+.ghost:hover{border-color:#6478b4}.danger{background:#2b1220;border-color:#743449;color:#ffb5c2}
+.hero{text-align:center;padding:55px 15px 28px}
+.badge{display:inline-flex;gap:8px;align-items:center;border:1px solid #33406a;background:#0b1430;padding:8px 13px;border-radius:999px;color:#ffd84a;font-size:13px}
+.hero h1{font-size:clamp(34px,6vw,66px);margin:18px 0 10px;line-height:1.02}
+.hero h1 .grad{background:linear-gradient(90deg,#8f4cff,#238fff,#e84cff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{max-width:760px;margin:auto;color:#aab5d0;font-size:17px}
+.studio{display:grid;grid-template-columns:230px 1fr 280px;gap:14px}
+.panel{background:linear-gradient(180deg,#0c1429ee,#080e1eee);border:1px solid #253256;border-radius:18px;box-shadow:0 20px 60px #0006}
+.sidebar{padding:12px}
+.section-title{font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:#7180a6;padding:10px 10px 7px}
+.tool{width:100%;display:flex;align-items:center;gap:10px;text-align:left;border:1px solid transparent;background:transparent;color:#cbd5ef;padding:12px;border-radius:12px;margin:3px 0}
+.tool:hover,.tool.active{background:#111d3b;border-color:#304274;color:#fff}
+.tool i{width:28px;text-align:center;font-style:normal;font-size:18px}
+.workspace{min-width:0;padding:14px}
+.workspace-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+.workspace-head h2{margin:0;font-size:18px}
+.status{font-size:12px;color:#8ea0c8}
+.canvas-wrap{min-height:500px;border:1px solid #27365f;border-radius:15px;background:repeating-conic-gradient(#0b1121 0 25%,#0d1426 0 50%) 50%/24px 24px;display:grid;place-items:center;overflow:hidden;position:relative}
+#photoCanvas{max-width:100%;max-height:65vh;display:none;box-shadow:0 12px 45px #0009}
+.empty{padding:45px;text-align:center;color:#8592b2}
+.empty .big{font-size:55px;margin-bottom:10px}
+.video-stage{width:100%;height:100%;min-height:500px;display:none;position:relative;align-items:center;justify-content:center;overflow:hidden}
+#videoPreview{max-width:100%;max-height:500px;display:none}
+.video-placeholder{color:#8b99b9;text-align:center}
+.video-overlay{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:clamp(20px,4vw,46px);font-weight:800;text-shadow:0 3px 15px #000;pointer-events:none;white-space:pre-wrap;text-align:center}
+.controls{margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.control{border:1px solid #26365e;background:#0c1428;padding:12px;border-radius:13px}
+.control label{display:flex;justify-content:space-between;color:#b8c4df;font-size:12px;margin-bottom:8px}
+input[type=range]{width:100%;accent-color:#7c3cff}
+input[type=file]{display:none}
+.file-btn{display:block;text-align:center;padding:13px;border-radius:12px;background:linear-gradient(135deg,#263cff,#7b3cff);font-weight:700}
+.right{padding:14px}
+.right h3{margin:4px 0 14px;font-size:15px}
+.field{margin:12px 0}.field label{display:block;color:#aab6d3;font-size:12px;margin-bottom:6px}
+input[type=text],select{width:100%;background:#0b1328;border:1px solid #29385f;color:#fff;border-radius:10px;padding:10px;outline:none}
+.check{display:flex;gap:8px;align-items:center;color:#b5c1db;font-size:13px;margin:10px 0}
+.btn-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.bottom{margin-top:14px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.feature{padding:18px}.feature h3{margin:0 0 7px}.feature p{color:#9ca8c5;margin:0;font-size:13px;line-height:1.6}
+.timeline{margin-top:12px;padding:12px;border:1px solid #29365c;background:#090f20;border-radius:14px;display:none}
+.timeline-head{display:flex;justify-content:space-between;color:#9eacd0;font-size:12px;margin-bottom:8px}
+.progress{height:7px;background:#182342;border-radius:99px;overflow:hidden}.progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,#7c3cff,#168cff)}
+.toast{position:fixed;right:18px;bottom:18px;background:#111b36;border:1px solid #415486;color:#fff;padding:12px 15px;border-radius:12px;opacity:0;transform:translateY(15px);transition:.25s;z-index:99}.toast.show{opacity:1;transform:none}
+@media(max-width:1050px){.studio{grid-template-columns:190px 1fr}.right{grid-column:1/-1}.bottom{grid-template-columns:1fr}}
+@media(max-width:720px){.app{padding:9px}.topbar{position:static}.nav{width:100%}.nav button{flex:1}.topbar{flex-wrap:wrap}.hero{padding:35px 8px 20px}.studio{grid-template-columns:1fr}.sidebar{display:grid;grid-template-columns:1fr 1fr}.section-title{grid-column:1/-1}.canvas-wrap,.video-stage{min-height:330px}.controls{grid-template-columns:1fr}.bottom{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="topbar">
+  <div class="brand"><div class="logo">✦</div><div><span>AI</span><b> Creator</b></div></div>
+  <nav class="nav">
+    <button id="photoTab" class="active">🖼️ Photo Editor</button>
+    <button id="videoTab">🎬 Video Studio</button>
+  </nav>
+  <button class="ghost" onclick="resetAll()">↻ Reset</button>
+</header>
+
+<section class="hero">
+  <div class="badge">✨ REAL BROWSER EDITING • NO DEMO BUTTONS</div>
+  <h1>Create. Edit. <span class="grad">Export.</span></h1>
+  <p>Professional-style photo editing and a lightweight video creator in one responsive studio. Your files stay in your browser while you edit.</p>
+</section>
+
+<div class="studio">
+  <aside class="panel sidebar">
+    <div class="section-title">Workspace</div>
+    <button class="tool active" id="photoTool" onclick="switchMode('photo')"><i>🖼️</i> Photo Editor</button>
+    <button class="tool" id="videoTool" onclick="switchMode('video')"><i>🎬</i> Video Creator</button>
+    <div class="section-title">Photo Tools</div>
+    <button class="tool photoOnly" onclick="rotatePhoto(-90)"><i>↺</i> Rotate Left</button>
+    <button class="tool photoOnly" onclick="rotatePhoto(90)"><i>↻</i> Rotate Right</button>
+    <button class="tool photoOnly" onclick="flipPhoto()"><i>↔</i> Flip</button>
+    <button class="tool photoOnly" onclick="fitPhoto()"><i>⛶</i> Fit to Screen</button>
+    <div class="section-title">Video Tools</div>
+    <button class="tool videoOnly" onclick="videoInput.click()"><i>＋</i> Add Video</button>
+    <button class="tool videoOnly" onclick="toggleVideo()"><i>▶</i> Play / Pause</button>
+    <button class="tool videoOnly" onclick="downloadVideo()"><i>⇩</i> Export Video</button>
+  </aside>
+
+  <main class="panel workspace">
+    <div class="workspace-head">
+      <h2 id="workspaceTitle">Photo Editor</h2>
+      <div class="status" id="status">Upload a photo to start</div>
+    </div>
+
+    <div class="canvas-wrap" id="photoStage">
+      <div class="empty" id="photoEmpty">
+        <div class="big">🖼️</div>
+        <h3>Drop your photo here</h3>
+        <p>JPG, PNG, WEBP • edit locally in your browser</p>
+        <label class="file-btn" for="photoInput">Choose Photo</label>
+      </div>
+      <canvas id="photoCanvas"></canvas>
+    </div>
+
+    <div class="video-stage" id="videoStage">
+      <div class="video-placeholder" id="videoEmpty"><div style="font-size:55px">🎬</div><h3>Upload a video</h3><p>MP4 / WebM / MOV supported by your browser</p><label class="file-btn" for="videoInput">Choose Video</label></div>
+      <video id="videoPreview" playsinline></video>
+      <div class="video-overlay" id="videoOverlay"></div>
+    </div>
+
+    <div class="timeline" id="timeline">
+      <div class="timeline-head"><span>VIDEO TIMELINE</span><span id="timeLabel">0:00 / 0:00</span></div>
+      <div class="progress"><span id="videoProgress"></span></div>
+      <input id="seek" type="range" min="0" max="100" value="0">
+    </div>
+
+    <div class="controls" id="photoControls">
+      <div class="control"><label>Brightness <span id="brightnessVal">100%</span></label><input id="brightness" type="range" min="0" max="200" value="100"></div>
+      <div class="control"><label>Contrast <span id="contrastVal">100%</span></label><input id="contrast" type="range" min="0" max="200" value="100"></div>
+      <div class="control"><label>Saturation <span id="saturationVal">100%</span></label><input id="saturation" type="range" min="0" max="200" value="100"></div>
+      <div class="control"><label>Blur <span id="blurVal">0px</span></label><input id="blur" type="range" min="0" max="12" step=".5" value="0"></div>
+    </div>
+
+    <div class="controls" id="videoControls" style="display:none">
+      <div class="control"><label>Video Brightness <span id="vBrightnessVal">100%</span></label><input id="vBrightness" type="range" min="50" max="150" value="100"></div>
+      <div class="control"><label>Video Saturation <span id="vSaturationVal">100%</span></label><input id="vSaturation" type="range" min="0" max="200" value="100"></div>
+      <div class="control"><label>Start <span id="startVal">0.0s</span></label><input id="startTime" type="range" min="0" max="0" step=".1" value="0"></div>
+      <div class="control"><label>End <span id="endVal">0.0s</span></label><input id="endTime" type="range" min="0" max="0" step=".1" value="0"></div>
+    </div>
+  </main>
+
+  <aside class="panel right">
+    <h3 id="sideTitle">Photo Settings</h3>
+
+    <div id="photoSettings">
+      <div class="field">
+        <label>Upload Image</label>
+        <label class="file-btn" for="photoInput">＋ Choose Photo</label>
+        <input id="photoInput" type="file" accept="image/*">
+      </div>
+      <div class="field"><label>Filter</label>
+        <select id="filter">
+          <option value="none">Original</option><option value="grayscale(1)">Grayscale</option>
+          <option value="sepia(.8)">Sepia</option><option value="contrast(1.2) saturate(1.25)">Vivid</option>
+          <option value="brightness(1.12) saturate(.85)">Soft</option><option value="hue-rotate(35deg) saturate(1.25)">Warm</option>
+        </select>
+      </div>
+      <div class="field"><label>Crop Ratio</label>
+        <select id="ratio"><option value="free">Free</option><option value="1">1 : 1</option><option value="1.7778">16 : 9</option><option value="1.3333">4 : 3</option><option value=".8">4 : 5</option></select>
+      </div>
+      <div class="field"><label>Text Overlay</label><input id="photoText" type="text" placeholder="Add text to your photo"></div>
+      <div class="btn-row"><button class="ghost" onclick="undoPhoto()">↶ Undo</button><button class="ghost" onclick="redoPhoto()">↷ Redo</button></div>
+      <button class="primary" style="width:100%;margin-top:9px" onclick="downloadPhoto()">⇩ Download PNG</button>
+    </div>
+
+    <div id="videoSettings" style="display:none">
+      <div class="field">
+        <label>Video File</label>
+        <label class="file-btn" for="videoInput">＋ Choose Video</label>
+        <input id="videoInput" type="file" accept="video/*">
+      </div>
+      <div class="field"><label>Speed</label>
+        <select id="speed"><option value="0.5">0.5× Slow</option><option value="1" selected>1× Normal</option><option value="1.5">1.5×</option><option value="2">2× Fast</option></select>
+      </div>
+      <div class="field"><label>Text Overlay</label><input id="videoText" type="text" placeholder="Text on video"></div>
+      <label class="check"><input id="mute" type="checkbox"> Mute original audio</label>
+      <label class="check"><input id="loop" type="checkbox"> Loop preview</label>
+      <button class="primary" style="width:100%;margin-top:8px" onclick="downloadVideo()">⇩ Export WebM</button>
+      <p style="font-size:11px;color:#7483a7;line-height:1.5">Export uses your browser's MediaRecorder. MP4 encoding requires a server/FFmpeg backend; WebM works in modern Chrome/Edge/Firefox.</p>
+    </div>
+  </aside>
+</div>
+
+<div class="bottom">
+  <div class="panel feature"><h3>🔒 Local Editing</h3><p>Photo processing happens on the canvas in your browser. The page does not upload your image just to apply basic edits.</p></div>
+  <div class="panel feature"><h3>⚡ Real Controls</h3><p>Brightness, contrast, saturation, blur, rotation, flip, filters, text, video trim and playback controls are connected to working JavaScript.</p></div>
+  <div class="panel feature"><h3>🚀 Ready to Extend</h3><p>The next layer can add AI background removal, generative editing, multi-clip timeline, transitions and server-side MP4 export.</p></div>
+</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+let mode='photo', photoImg=null, photoLoaded=false;
+let photoState={brightness:100,contrast:100,saturation:100,blur:0,rotation:0,flip:false,filter:'none',text:''};
+let undoStack=[], redoStack=[];
+const canvas=$('photoCanvas'), ctx=canvas.getContext('2d');
+const video=$('videoPreview'), videoInput=$('videoInput');
+let videoURL=null, recording=false, recorder=null, chunks=[];
+
+function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(window.__toast);window.__toast=setTimeout(()=>t.classList.remove('show'),2200)}
+function switchMode(next){
+  mode=next;
+  const photo=next==='photo';
+  $('photoTab').classList.toggle('active',photo);$('videoTab').classList.toggle('active',!photo);
+  $('photoTool').classList.toggle('active',photo);$('videoTool').classList.toggle('active',!photo);
+  document.querySelectorAll('.photoOnly').forEach(x=>x.style.display=photo?'flex':'none');
+  document.querySelectorAll('.videoOnly').forEach(x=>x.style.display=photo?'none':'flex');
+  $('workspaceTitle').textContent=photo?'Photo Editor':'Video Creator Studio';
+  $('sideTitle').textContent=photo?'Photo Settings':'Video Settings';
+  $('photoStage').style.display=photo?'grid':'none';$('photoControls').style.display=photo?'grid':'none';$('photoSettings').style.display=photo?'block':'none';
+  $('videoStage').style.display=photo?'none':'flex';$('videoControls').style.display=photo?'none':'grid';$('videoSettings').style.display=photo?'none':'block';
+  $('timeline').style.display=photo?'none':'block';
+  $('status').textContent=photo?(photoLoaded?'Photo ready':'Upload a photo to start'):(video.src?'Video ready':'Upload a video to start');
+}
+$('photoTab').onclick=()=>switchMode('photo');$('videoTab').onclick=()=>switchMode('video');
+
+$('photoInput').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>loadPhoto(ev.target.result);r.readAsDataURL(f)});
+function loadPhoto(src){
+  photoImg=new Image();
+  photoImg.onload=()=>{photoLoaded=true;photoState={brightness:100,contrast:100,saturation:100,blur:0,rotation:0,flip:false,filter:'none',text:''};undoStack=[];redoStack=[];$('photoEmpty').style.display='none';canvas.style.display='block';$('status').textContent=`${photoImg.width} × ${photoImg.height}`;drawPhoto()};
+  photoImg.src=src;
+}
+function snapshot(){if(!photoLoaded)return;undoStack.push(JSON.stringify(photoState));if(undoStack.length>30)undoStack.shift();redoStack=[]}
+function applyState(s){photoState=JSON.parse(s);syncPhotoControls();drawPhoto()}
+function undoPhoto(){if(!undoStack.length)return toast('Nothing to undo');redoStack.push(JSON.stringify(photoState));applyState(undoStack.pop())}
+function redoPhoto(){if(!redoStack.length)return toast('Nothing to redo');undoStack.push(JSON.stringify(photoState));applyState(redoStack.pop())}
+function syncPhotoControls(){
+  $('brightness').value=photoState.brightness;$('contrast').value=photoState.contrast;$('saturation').value=photoState.saturation;$('blur').value=photoState.blur;$('filter').value=photoState.filter;$('photoText').value=photoState.text;
+  $('brightnessVal').textContent=photoState.brightness+'%';$('contrastVal').textContent=photoState.contrast+'%';$('saturationVal').textContent=photoState.saturation+'%';$('blurVal').textContent=photoState.blur+'px';
+}
+['brightness','contrast','saturation','blur'].forEach(id=>$(id).addEventListener('input',()=>{if(!photoLoaded)return;photoState[id]=+$(id).value;$(`${id}Val`).textContent=$(id).value+(id==='blur'?'px':'%');drawPhoto()}));
+$('filter').addEventListener('change',()=>{snapshot();photoState.filter=$('filter').value;drawPhoto()});
+$('photoText').addEventListener('input',()=>{photoState.text=$('photoText').value;drawPhoto()});
+function drawPhoto(){
+  if(!photoImg)return;
+  const r=photoState.rotation%180!==0;
+  canvas.width=r?photoImg.height:photoImg.width;canvas.height=r?photoImg.width:photoImg.height;
+  ctx.save();ctx.clearRect(0,0,canvas.width,canvas.height);ctx.translate(canvas.width/2,canvas.height/2);ctx.rotate(photoState.rotation*Math.PI/180);ctx.scale(photoState.flip?-1:1,1);
+  ctx.filter=`brightness(${photoState.brightness}%) contrast(${photoState.contrast}%) saturate(${photoState.saturation}%) blur(${photoState.blur}px) ${photoState.filter==='none'?'':photoState.filter}`;
+  ctx.drawImage(photoImg,-photoImg.width/2,-photoImg.height/2);ctx.filter='none';
+  if(photoState.text){const size=Math.max(22,Math.min(canvas.width,canvas.height)*.055);ctx.font=`800 ${size}px Inter,Arial`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineWidth=Math.max(3,size*.08);ctx.strokeStyle='rgba(0,0,0,.65)';ctx.strokeText(photoState.text,0,canvas.height*.36);ctx.fillStyle='#fff';ctx.fillText(photoState.text,0,canvas.height*.36)}
+  ctx.restore();
+}
+function rotatePhoto(deg){if(!photoLoaded)return toast('Upload a photo first');snapshot();photoState.rotation+=deg;drawPhoto()}
+function flipPhoto(){if(!photoLoaded)return toast('Upload a photo first');snapshot();photoState.flip=!photoState.flip;drawPhoto()}
+function fitPhoto(){canvas.style.width='auto';canvas.style.height='auto';drawPhoto()}
+function downloadPhoto(){if(!photoLoaded)return toast('Upload a photo first');canvas.toBlob(blob=>{const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='edited-photo.png';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);toast('Photo exported')},'image/png')}
+
+videoInput.addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;if(videoURL)URL.revokeObjectURL(videoURL);videoURL=URL.createObjectURL(f);video.src=videoURL;video.style.display='block';$('videoEmpty').style.display='none';video.load();video.addEventListener('loadedmetadata',setupVideo,{once:true});toast('Video loaded')});
+function setupVideo(){
+  const d=video.duration||0;$('startTime').max=d;$('endTime').max=d;$('endTime').value=d;$('startVal').textContent='0.0s';$('endVal').textContent=d.toFixed(1)+'s';$('status').textContent=`${video.videoWidth} × ${video.videoHeight} • ${d.toFixed(1)}s`;video.currentTime=0;updateVideoFilter();
+}
+function toggleVideo(){if(!video.src)return toast('Upload a video first');video.paused?video.play():video.pause()}
+$('speed').addEventListener('change',()=>video.playbackRate=+$('speed').value);
+$('mute').addEventListener('change',()=>video.muted=$('mute').checked);
+$('loop').addEventListener('change',()=>video.loop=$('loop').checked);
+$('videoText').addEventListener('input',()=>{$('videoOverlay').textContent=$('videoText').value});
+['vBrightness','vSaturation'].forEach(id=>$(id).addEventListener('input',updateVideoFilter));
+function updateVideoFilter(){if(!video.src)return;video.style.filter=`brightness(${$('vBrightness').value}%) saturate(${$('vSaturation').value}%)`;$('vBrightnessVal').textContent=$('vBrightness').value+'%';$('vSaturationVal').textContent=$('vSaturation').value+'%'}
+$('startTime').addEventListener('input',()=>{let s=+$('startTime').value,e=+$('endTime').value;if(s>=e-.1){s=Math.max(0,e-.1);$('startTime').value=s}video.currentTime=s;$('startVal').textContent=s.toFixed(1)+'s'});
+$('endTime').addEventListener('input',()=>{let e=+$('endTime').value,s=+$('startTime').value;if(e<=s+.1){e=Math.min(video.duration,s+.1);$('endTime').value=e} $('endVal').textContent=e.toFixed(1)+'s'});
+video.addEventListener('timeupdate',()=>{if(!video.duration)return;const s=+$('startTime').value||0,e=+$('endTime').value||video.duration;if(video.currentTime< s)video.currentTime=s;if(video.currentTime>=e){video.pause();video.currentTime=s}const pct=(video.currentTime-s)/Math.max(.01,e-s)*100;$('seek').value=Math.max(0,Math.min(100,pct));$('videoProgress').style.width=$('seek').value+'%';$('timeLabel').textContent=`${formatTime(video.currentTime)} / ${formatTime(e)}`});
+$('seek').addEventListener('input',()=>{const s=+$('startTime').value||0,e=+$('endTime').value||video.duration;video.currentTime=s+(+$('seek').value/100)*(e-s)});
+function formatTime(t){if(!isFinite(t))return'0:00';return`${Math.floor(t/60)}:${String(Math.floor(t%60)).padStart(2,'0')}`}
+
+async function downloadVideo(){
+  if(!video.src)return toast('Upload a video first');
+  if(!window.MediaRecorder)return toast('MediaRecorder is not supported in this browser');
+  if(recording)return;
+  recording=true;chunks=[];
+  const start=+$('startTime').value||0,end=+$('endTime').value||video.duration;
+  const streamCanvas=document.createElement('canvas');
+  const maxW=1280, scale=Math.min(1,maxW/video.videoWidth);
+  streamCanvas.width=Math.round(video.videoWidth*scale);streamCanvas.height=Math.round(video.videoHeight*scale);
+  const sctx=streamCanvas.getContext('2d');
+  const fps=30;
+  const canvasStream=streamCanvas.captureStream(fps);
+  let audioStream=null;
+  try{
+    const ac=new AudioContext(), src=ac.createMediaElementSource(video), dest=ac.createMediaStreamDestination();src.connect(dest);src.connect(ac.destination);audioStream=dest.stream;
+  }catch(e){}
+  const tracks=[...canvasStream.getVideoTracks(),...(video.muted||$('mute').checked||!audioStream?[]:audioStream.getAudioTracks())];
+  const combined=new MediaStream(tracks);
+  const mime=MediaRecorder.isTypeSupported('video/webm;codecs=vp9')?'video/webm;codecs=vp9':'video/webm';
+  recorder=new MediaRecorder(combined,{mimeType:mime});
+  recorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};
+  recorder.onstop=()=>{const blob=new Blob(chunks,{type:'video/webm'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='creator-studio-export.webm';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000);recording=false;toast('Video exported as WebM')};
+  recorder.start(200);
+  video.currentTime=start;video.play();
+  function draw(){if(!recording)return;sctx.filter=`brightness(${$('vBrightness').value}%) saturate(${$('vSaturation').value}%)`;sctx.drawImage(video,0,0,streamCanvas.width,streamCanvas.height);sctx.filter='none';const txt=$('videoText').value;if(txt){sctx.font=`800 ${Math.max(24,streamCanvas.width*.045)}px Arial`;sctx.textAlign='center';sctx.textBaseline='middle';sctx.lineWidth=5;sctx.strokeStyle='#000b';sctx.strokeText(txt,streamCanvas.width/2,streamCanvas.height*.18);sctx.fillStyle='#fff';sctx.fillText(txt,streamCanvas.width/2,streamCanvas.height*.18)}if(video.currentTime>=end){video.pause();recorder.stop();return}requestAnimationFrame(draw)}
+  draw();
+}
+function resetAll(){if(videoURL)URL.revokeObjectURL(videoURL);location.reload()}
+switchMode('photo');
+</script>
+</body>
+</html>
